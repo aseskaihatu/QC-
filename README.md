@@ -1,19 +1,37 @@
-# QC Kentei 4 · Phần I / QC検定4級 · 第I部
+# QC検定4級 練習クイズ / QC Kentei Grade 4 Practice Quiz
 
-Trang luyện trắc nghiệm QC Kentei cấp 4 bằng tiếng Việt và tiếng Nhật. Gói 1 gồm Mục 1–13; Gói 2 gồm Mục 13–26. Mỗi gói có 20 câu, 5 điểm mỗi câu, kèm chấm điểm và giải thích.
+## 日本語
 
-ベトナム語・日本語に対応したQC検定4級の練習サイトです。セット1は第1～13項、セット2は第13～26項を扱います。各セット20問、1問5点で、採点と解説が付いています。
+QC検定4級の学習用クイズサイトです。第I部の内容を対象とし、ベトナム語と日本語を切り替えて利用できます。
 
-## Chạy trên máy / ローカルで実行
+- セット1：第1～13項
+- セット2：第13～26項
+- 各セット20問、1問5点、合計100点
+- 回答後に採点結果と間違えた問題の解説を表示
+- アクセスするたびに問題の順序を変更
 
-Đây là trang tĩnh; không cần cài thư viện. Mở `dist/index.html` trong trình duyệt, hoặc chạy máy chủ tĩnh:
+このサイトは学習用の参考資料であり、公式試験問題ではありません。
+
+## English
+
+A practice quiz website for QC Kentei Grade 4, covering Part I. The interface and questions are available in Vietnamese and Japanese.
+
+- Set 1: Sections 1–13
+- Set 2: Sections 13–26
+- 20 questions per set, 5 points each, for a total of 100 points
+- Results and explanations for incorrect answers after submission
+- Question order is shuffled on each visit
+
+This site is for study and reference only. It does not contain official exam questions.
+
+## ローカルで実行 / Run locally
+
+静的サイトなので、追加のライブラリは不要です。ブラウザーで `dist/index.html` を開くか、ローカルサーバーを起動してください。
+
+This is a static website with no dependencies. Open `dist/index.html` in a browser, or start a local server:
 
 ```sh
 python -m http.server 8765 --directory dist
 ```
 
-Sau đó mở `http://localhost:8765/`.
-
-公開中のサイト: https://qc-kentei-part1-practice.asessystem88.chatgpt.site/
-
-Nội dung chỉ mang tính tham khảo, không phải đề thi chính thức。公式試験問題ではありません。
+ブラウザーで `http://localhost:8765/` にアクセスします。 / Then open `http://localhost:8765/`.
