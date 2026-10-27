@@ -36,3 +36,6 @@
 @media(max-width:300px){
   .brand-small{display:none}
 }
+
+.remaining-note{margin:17px 0 0}
+.result-kicker{color:#b4d7c1}

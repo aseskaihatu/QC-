@@ -6,6 +6,11 @@
   const answerKey = i => 'qc-part1-v2-pack-' + i;
   const orderKey = i => 'qc-part1-v2-order-' + i;
   const langKey = 'qc-part1-language';
+  const storage = {
+    get(key) { try { return localStorage.getItem(key); } catch { return null; } },
+    set(key, value) { try { localStorage.setItem(key, value); } catch {} },
+    remove(key) { try { localStorage.removeItem(key); } catch {} }
+  };
   const esc = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const text = {
     vi: {
@@ -31,7 +36,7 @@
     ]
   };
 
-  let state = { view: 'home', pack: 0, index: 0, answers: [], order: [], lang: localStorage.getItem(langKey) === 'ja' ? 'ja' : 'vi' };
+  let state = { view: 'home', pack: 0, index: 0, answers: [], order: [], lang: storage.get(langKey) === 'ja' ? 'ja' : 'vi' };
   const s = () => text[state.lang];
   function qAt(pack, source) {
     const vi = packs[pack].questions[source];
@@ -41,21 +46,21 @@
   }
   function saved(i) {
     try {
-      const value = JSON.parse(localStorage.getItem(answerKey(i)));
-      return Array.isArray(value) && value.length === 20 ? value : null;
+      const value = JSON.parse(storage.get(answerKey(i)));
+      return Array.isArray(value) && value.length === 20 && value.every(answer => answer === null || Number.isInteger(answer) && answer >= 0 && answer < alphabet.length) ? value : null;
     } catch { return null; }
   }
-  function persist() { localStorage.setItem(answerKey(state.pack), JSON.stringify(state.answers)); }
+  function persist() { storage.set(answerKey(state.pack), JSON.stringify(state.answers)); }
   function shuffledOrder(i) {
     const order = Array.from({ length: packs[i].questions.length }, (_, n) => n);
     for (let n = order.length - 1; n > 0; n--) {
       const j = Math.floor(Math.random() * (n + 1));
       [order[n], order[j]] = [order[j], order[n]];
     }
-    if (localStorage.getItem(orderKey(i)) === JSON.stringify(order) && order.length > 1) {
+    if (storage.get(orderKey(i)) === JSON.stringify(order) && order.length > 1) {
       [order[0], order[1]] = [order[1], order[0]];
     }
-    localStorage.setItem(orderKey(i), JSON.stringify(order));
+    storage.set(orderKey(i), JSON.stringify(order));
     return order;
   }
   function showQuestion() {
@@ -105,7 +110,8 @@
     const q = qAt(pack, order[index]);
     const done = answers.filter(value => value !== null).length;
     const topicLabel = state.lang === 'ja' ? `${t.topic}${q[0]}${t.topicSuffix}` : `${t.topic} ${q[0]}`;
-    root.innerHTML = `<div class="quiz-head"><div><button class="back" id="back-home">← ${esc(t.backHome)}</button><div class="q-label">${esc(t.part)} · ${esc(t.pack)} ${String(pack + 1).padStart(2, '0')}</div><h1>${esc(packText[state.lang][pack].title)}</h1><p>${esc(t.quizIntro)}</p></div><div class="score-pill">${done} / 20 ${esc(t.answered)}</div></div><div class="progress-row"><span>${esc(t.progress)}</span><div class="progress-track"><div class="progress-fill" style="width:${done * 5}%"></div></div><span>${done * 5}%</span></div><div class="quiz-layout"><section class="question-card"><div class="q-label">${esc(t.question)} ${String(index + 1).padStart(2, '0')} / 20 &nbsp;·&nbsp; ${esc(topicLabel)} &nbsp;·&nbsp; ${esc(t.points)}</div><h2>${esc(q[1])}</h2><div class="options" role="radiogroup" aria-label="${esc(t.optionsAria)}">${q[2].map((option, n) => `<button class="option ${answers[order[index]] === n ? 'selected' : ''}" data-choice="${n}" role="radio" aria-checked="${answers[order[index]] === n}"><span class="option-letter">${alphabet[n]}</span><span>${esc(option)}</span></button>`).join('')}</div><div class="quiz-actions"><button class="button secondary" id="prev" ${index === 0 ? 'disabled' : ''}>← ${esc(t.previous)}</button>${index === 19 ? `<button class="button" id="submit" ${done < 20 ? 'disabled' : ''}>${esc(t.submit)} ↗</button>` : `<button class="button" id="next">${esc(t.next)} →</button>`}</div>${index === 19 && done < 20 ? `<p class="small-note" style="margin:17px 0 0">${esc(t.remainingA)} ${20 - done} ${esc(t.remainingB)}</p>` : ''}</section><aside class="side"><h3>${esc(t.jump)}</h3><div class="number-grid">${order.map((source, n) => `<button data-jump="${n}" class="${n === index ? 'current ' : ''}${answers[source] !== null ? 'done' : ''}" aria-label="${esc(t.questionAria)} ${n + 1}${answers[source] !== null ? ', ' + esc(t.answeredAria) : ''}">${n + 1}</button>`).join('')}</div><p class="side-note">${esc(t.sideNote)}</p></aside></div>`;
+    root.innerHTML = `<div class="quiz-head"><div><button class="back" id="back-home">← ${esc(t.backHome)}</button><div class="q-label">${esc(t.part)} · ${esc(t.pack)} ${String(pack + 1).padStart(2, '0')}</div><h1>${esc(packText[state.lang][pack].title)}</h1><p>${esc(t.quizIntro)}</p></div><div class="score-pill">${done} / 20 ${esc(t.answered)}</div></div><div class="progress-row"><span>${esc(t.progress)}</span><div class="progress-track"><div class="progress-fill"></div></div><span>${done * 5}%</span></div><div class="quiz-layout"><section class="question-card"><div class="q-label">${esc(t.question)} ${String(index + 1).padStart(2, '0')} / 20 &nbsp;·&nbsp; ${esc(topicLabel)} &nbsp;·&nbsp; ${esc(t.points)}</div><h2>${esc(q[1])}</h2><div class="options" role="radiogroup" aria-label="${esc(t.optionsAria)}">${q[2].map((option, n) => `<button class="option ${answers[order[index]] === n ? 'selected' : ''}" data-choice="${n}" role="radio" aria-checked="${answers[order[index]] === n}"><span class="option-letter">${alphabet[n]}</span><span>${esc(option)}</span></button>`).join('')}</div><div class="quiz-actions"><button class="button secondary" id="prev" ${index === 0 ? 'disabled' : ''}>← ${esc(t.previous)}</button>${index === 19 ? `<button class="button" id="submit" ${done < 20 ? 'disabled' : ''}>${esc(t.submit)} ↗</button>` : `<button class="button" id="next">${esc(t.next)} →</button>`}</div>${index === 19 && done < 20 ? `<p class="small-note remaining-note">${esc(t.remainingA)} ${20 - done} ${esc(t.remainingB)}</p>` : ''}</section><aside class="side"><h3>${esc(t.jump)}</h3><div class="number-grid">${order.map((source, n) => `<button data-jump="${n}" class="${n === index ? 'current ' : ''}${answers[source] !== null ? 'done' : ''}" aria-label="${esc(t.questionAria)} ${n + 1}${answers[source] !== null ? ', ' + esc(t.answeredAria) : ''}">${n + 1}</button>`).join('')}</div><p class="side-note">${esc(t.sideNote)}</p></aside></div>`;
+    root.querySelector('.progress-fill').style.width = `${done * 5}%`;
     root.querySelector('#back-home').onclick = () => { home(); scrollTo(0, 0); };
     root.querySelectorAll('[data-choice]').forEach(button => button.onclick = () => { state.answers[state.order[index]] = Number(button.dataset.choice); persist(); quiz(); });
     root.querySelectorAll('[data-jump]').forEach(button => button.onclick = () => { state.index = Number(button.dataset.jump); quiz(); showQuestion(); });
@@ -113,14 +119,14 @@
     const next = root.querySelector('#next');
     if (next) next.onclick = () => { state.index++; quiz(); showQuestion(); };
     const submit = root.querySelector('#submit');
-    if (submit) submit.onclick = () => { if (state.answers.every(value => value !== null)) { localStorage.removeItem(answerKey(state.pack)); state.view = 'result'; render(); scrollTo(0, 0); } };
+    if (submit) submit.onclick = () => { if (state.answers.every(value => value !== null)) { storage.remove(answerKey(state.pack)); state.view = 'result'; render(); scrollTo(0, 0); } };
   }
   function result() {
     const t = s();
     const { pack, order, answers } = state;
     const correct = order.reduce((n, source) => n + (answers[source] === packs[pack].questions[source][3]), 0);
     const score = correct * 5;
-    root.innerHTML = `<div class="quiz-head"><div><button class="back" id="back-home">← ${esc(t.backHome)}</button><div class="q-label">${esc(t.results)} · ${esc(t.part)} / ${esc(t.pack)} ${String(pack + 1).padStart(2, '0')}</div><h1>${esc(t.resultTitle)}</h1><p>${esc(t.resultIntro)}</p></div></div><section class="result-hero"><div><div class="q-label" style="color:#b4d7c1">${esc(t.completed)}</div><h1>${esc(score >= 80 ? t.great : score >= 50 ? t.keepGoing : t.reviewMore)}</h1><p>${correct} ${esc(t.correctCount)} · ${20 - correct} ${esc(t.wrongCount)} · ${esc(t.perQuestion)}</p></div><div class="result-score">${score}<small> / 100</small></div></section><div class="results-actions"><button class="button" id="retry">${esc(t.retry)} ↻</button><button class="button secondary" id="choose">${esc(t.chooseAnother)}</button></div><div class="section-head"><div><h2>${esc(t.reviewTitle)}</h2><p>${esc(t.reviewSubtitle)}</p></div></div><div class="review-list">${order.map((source, i) => {
+    root.innerHTML = `<div class="quiz-head"><div><button class="back" id="back-home">← ${esc(t.backHome)}</button><div class="q-label">${esc(t.results)} · ${esc(t.part)} / ${esc(t.pack)} ${String(pack + 1).padStart(2, '0')}</div><h1>${esc(t.resultTitle)}</h1><p>${esc(t.resultIntro)}</p></div></div><section class="result-hero"><div><div class="q-label result-kicker">${esc(t.completed)}</div><h1>${esc(score >= 80 ? t.great : score >= 50 ? t.keepGoing : t.reviewMore)}</h1><p>${correct} ${esc(t.correctCount)} · ${20 - correct} ${esc(t.wrongCount)} · ${esc(t.perQuestion)}</p></div><div class="result-score">${score}<small> / 100</small></div></section><div class="results-actions"><button class="button" id="retry">${esc(t.retry)} ↻</button><button class="button secondary" id="choose">${esc(t.chooseAnother)}</button></div><div class="section-head"><div><h2>${esc(t.reviewTitle)}</h2><p>${esc(t.reviewSubtitle)}</p></div></div><div class="review-list">${order.map((source, i) => {
       const q = qAt(pack, source);
       const ok = answers[source] === q[3];
       const topicLabel = state.lang === 'ja' ? `${t.topic}${q[0]}${t.topicSuffix}` : `${t.topic} ${q[0]}`;
@@ -132,7 +138,7 @@
   document.querySelectorAll('[data-lang]').forEach(button => button.addEventListener('click', () => {
     if (button.dataset.lang === state.lang) return;
     state.lang = button.dataset.lang;
-    localStorage.setItem(langKey, state.lang);
+    storage.set(langKey, state.lang);
     render();
   }));
   render();
