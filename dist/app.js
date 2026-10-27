@@ -141,5 +141,10 @@
     storage.set(langKey, state.lang);
     render();
   }));
+  document.querySelector('.brand').addEventListener('click', event => {
+    event.preventDefault();
+    home();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  });
   render();
 })();
