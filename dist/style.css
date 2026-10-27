@@ -39,3 +39,5 @@
 
 .remaining-note{margin:17px 0 0}
 .result-kicker{color:#b4d7c1}
+
+@media(min-width:581px){.pack:last-child{grid-column:1/-1;min-height:215px}.pack:last-child p{max-width:640px}}
